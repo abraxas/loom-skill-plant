@@ -1,0 +1,35 @@
+name: loom-190-skill-plant
+
+services:
+  loom:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: loom
+    ports:
+      - "127.0.0.1:18640:8000"
+    environment:
+      AWS_EC2_METADATA_DISABLED: "true"
+      AWS_ACCESS_KEY_ID: "lab"
+      AWS_SECRET_ACCESS_KEY: "lab"
+      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_REGION: "us-east-1"
+      LOOM_LITELLM_PRICING_URL: ""
+      LAB_REGISTRY_PATH: "/tmp/loom-190-skill-plant-registry.json"
+      PYTHONUNBUFFERED: "1"
+    labels:
+      - "LOOM-190-SKILL-PLANT"
+    volumes:
+      - ./poc.py:/lab/poc.py:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 8s
